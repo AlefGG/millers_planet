@@ -158,7 +158,7 @@ class _SecondPageViewState extends State<SecondPageView>
                         child: FadeTransition(
                           opacity: _fadeAnimation1,
                           child: Text(
-                            '1 second passes for 61320 seconds on Miller\'s planet, or 17 hours and 2 minutes',
+                            'On Miller\'s planet, 1 second equals 61320 seconds on Earth—around 17 hours and 2 minutes.',
                             style: theme.largeTitleThin64,
                             textAlign: TextAlign.center,
                           ),
@@ -174,7 +174,7 @@ class _SecondPageViewState extends State<SecondPageView>
                           child: Column(
                             children: [
                               Text(
-                                'If you\'d spent all this time since Interstellar\'s release on Miller\'s planet, on Earth it would be',
+                                'If you had spent all the time since Interstellar\'s release on Miller\'s planet, the current Earth date would be:',
                                 style: theme.largeTitle48,
                                 textAlign: TextAlign.center,
                               ),
