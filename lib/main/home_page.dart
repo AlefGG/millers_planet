@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:millers_planet/main/widgets/expandable_page_view.dart';
 import 'package:millers_planet/main/widgets/first_page_view.dart';
 import 'package:millers_planet/main/widgets/second_page_view.dart';
+import 'package:millers_planet/main/widgets/transparent_image.dart';
 import 'package:millers_planet/resources/ui_themes.dart';
 import 'package:millers_planet/src/constants.dart';
 
@@ -18,12 +19,20 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late PageController _pageController;
 
+  double _backgroundOffset = 0.0;
+
   @override
   void initState() {
     _pageController = PageController(
-      initialPage: 1,
+      initialPage: 0,
       viewportFraction: 1.0,
     );
+
+    _pageController.addListener(() {
+      setState(() {
+        _backgroundOffset = _pageController.page ?? 0.0;
+      });
+    });
     super.initState();
   }
 
@@ -44,14 +53,17 @@ class _HomePageState extends State<HomePage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Container(
-            child: Image.asset(
-              'assets/images/planet.jpg',
-              fit: BoxFit.fitHeight,
+          Positioned.fill(
+            child: Transform.translate(
+              offset: Offset(0, -1 * _backgroundOffset * 50),
+              child: FadeInImage(
+                placeholder: MemoryImage(kTransparentImage),
+                image: const AssetImage('assets/images/planet.jpg'),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           PageView.builder(
-            // ExpandablePageView(
             itemCount: 2,
             scrollDirection: Axis.vertical,
             controller: _pageController,

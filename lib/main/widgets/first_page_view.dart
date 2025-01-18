@@ -35,13 +35,12 @@ class _FirstPageViewState extends State<FirstPageView>
     );
 
     _currentDateTime = DateTime.now();
-    //TODO: uncomment for prod
-    // _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-    //   setState(() {
-    //     _currentDateTime = DateTime.now();
-    //     // print(_currentDateTime);
-    //   });
-    // });
+    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      setState(() {
+        _currentDateTime = DateTime.now();
+        // print(_currentDateTime);
+      });
+    });
   }
 
   @override
@@ -78,42 +77,37 @@ class _FirstPageViewState extends State<FirstPageView>
           children: [
             const SizedBox.shrink(),
             // const Spacer(),
-            SizedBox(
-              // color: Colors.black.withOpacity(.6),
-              child: Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      formattedMillersMicrosecondsSinceDate
-                          .toString()
-                          .split(' ')
-                          .last
-                          .substring(
-                              0,
-                              formattedMillersMicrosecondsSinceDate
-                                      .toString()
-                                      .split(' ')
-                                      .last
-                                      .length -
-                                  0),
-                      style: theme.largeTitleThin64.copyWith(fontSize: 96),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Text(
-                      'Passed on Miller\'s planet since Interstellar\'s release',
-                      style: theme.largeTitle48,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(
-                      height: 32,
-                    ),
-                  ],
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  formattedMillersMicrosecondsSinceDate
+                      .toString()
+                      .split(' ')
+                      .last
+                      .substring(
+                          0,
+                          formattedMillersMicrosecondsSinceDate
+                                  .toString()
+                                  .split(' ')
+                                  .last
+                                  .length -
+                              0),
+                  style: theme.largeTitleThin64.copyWith(fontSize: 96),
+                  textAlign: TextAlign.center,
                 ),
-              ),
+                const SizedBox(
+                  height: 8,
+                ),
+                Text(
+                  'Passed on Miller\'s planet since Interstellar\'s release',
+                  style: theme.largeTitle48,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(
+                  height: 32,
+                ),
+              ],
             ),
 
             // const Spacer(),

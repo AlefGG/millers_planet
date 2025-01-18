@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:millers_planet/main/model/card_model.dart';
 import 'package:millers_planet/resources/ui_themes.dart';
 import 'package:millers_planet/src/constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SecondPageView extends StatefulWidget {
   final VoidCallback onButtonPressed;
@@ -16,9 +18,14 @@ class SecondPageView extends StatefulWidget {
 }
 
 class _SecondPageViewState extends State<SecondPageView>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
+  late AnimationController _iconController;
   late AnimationController _controller;
   late Animation<double> _animation;
+  late Animation<Offset> _slideAnimation1;
+  late Animation<Offset> _slideAnimation2;
+  late Animation<double> _fadeAnimation1;
+  late Animation<double> _fadeAnimation2;
   late Timer _timer;
   late DateTime _currentDateTime;
   String _dateTimeOnEarth = DateTime.now().toString();
@@ -26,13 +33,13 @@ class _SecondPageViewState extends State<SecondPageView>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _iconController = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
     )..repeat(reverse: true);
     _animation = Tween<double>(begin: 0, end: 20).animate(
       CurvedAnimation(
-        parent: _controller,
+        parent: _iconController,
         curve: Curves.easeInOut,
       ),
     );
@@ -45,12 +52,49 @@ class _SecondPageViewState extends State<SecondPageView>
         // print(_currentDateTime);
       });
     });
+
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+
+    // Slide and fade animations for the first text
+    _slideAnimation1 = Tween<Offset>(
+      begin: const Offset(0, 1), // Start from below
+      end: Offset.zero, // Move to the original position
+    ).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+
+    _fadeAnimation1 = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+
+    // Slide and fade animations for the second text (delayed)
+    _slideAnimation2 = Tween<Offset>(
+      begin: const Offset(0, 1),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.5, 1.0, curve: Curves.easeInOut),
+      ),
+    );
+
+    _fadeAnimation2 = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.5, 1.0, curve: Curves.easeInOut),
+      ),
+    );
+
+    _controller.forward(); // Start animations
   }
 
   @override
   void dispose() {
+    _iconController.dispose();
     _controller.dispose();
-
     _timer.cancel();
     super.dispose();
   }
@@ -88,7 +132,7 @@ class _SecondPageViewState extends State<SecondPageView>
                               child: InkWell(
                                 onTap: () {
                                   widget.onButtonPressed();
-                                  _controller.stop();
+                                  _iconController.stop();
                                 },
                                 borderRadius: BorderRadius.circular(90),
                                 child: const Icon(
@@ -109,26 +153,44 @@ class _SecondPageViewState extends State<SecondPageView>
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        '1 second passes for 61320 seconds on Miller\'s planet, or 17 hours and 2 minutes',
-                        style: theme.largeTitleThin64,
-                        textAlign: TextAlign.center,
+                      SlideTransition(
+                        position: _slideAnimation1,
+                        child: FadeTransition(
+                          opacity: _fadeAnimation1,
+                          child: Text(
+                            '1 second passes for 61320 seconds on Miller\'s planet, or 17 hours and 2 minutes',
+                            style: theme.largeTitleThin64,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       ),
                       const SizedBox(
                         height: 32,
                       ),
-                      Text(
-                        'If you\'d spent all this time since Interstellar\'s release on Miller\'s planet, on Earth it would be',
-                        style: theme.largeTitle48,
-                        textAlign: TextAlign.center,
+                      SlideTransition(
+                        position: _slideAnimation2,
+                        child: FadeTransition(
+                          opacity: _fadeAnimation2,
+                          child: Column(
+                            children: [
+                              Text(
+                                'If you\'d spent all this time since Interstellar\'s release on Miller\'s planet, on Earth it would be',
+                                style: theme.largeTitle48,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _dateTimeOnEarth,
+                                style: theme.largeTitleThin64
+                                    .copyWith(fontSize: 80),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                       const SizedBox(
-                        height: 8,
-                      ),
-                      Text(
-                        _dateTimeOnEarth,
-                        style: theme.largeTitleThin64.copyWith(fontSize: 80),
-                        textAlign: TextAlign.center,
+                        height: 50,
                       ),
                     ],
                   ),
@@ -142,7 +204,22 @@ class _SecondPageViewState extends State<SecondPageView>
           width: MediaQuery.sizeOf(context).width,
           child: Container(
             height: 50,
-            color: theme.greyPrimary,
+            color: Colors.black,
+            child: Center(
+              child: InkWell(
+                onTap: () {
+                  _launchURL();
+                },
+                child: SvgPicture.asset(
+                  'assets/icons/github.svg',
+                  height: 40,
+                  colorFilter: ColorFilter.mode(
+                    theme.greyPrimary,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+            ),
           ),
         )
       ],
@@ -164,85 +241,21 @@ class _SecondPageViewState extends State<SecondPageView>
         (earthMilliseconds ~/ millisecondsInYear) + DateTime.now().year;
     final remainingMilliseconds = earthMilliseconds % millisecondsInYear;
 
-    final earthDays =
-        (remainingMilliseconds ~/ millisecondsInDay) + DateTime.now().day;
+    final earthDays = (remainingMilliseconds ~/ millisecondsInDay);
     final remainingMillisecondsInDay =
         remainingMilliseconds % millisecondsInDay;
 
-    final earthHours = (remainingMillisecondsInDay ~/ millisecondsInHour) +
-        DateTime.now().hour;
+    final earthHours = (remainingMillisecondsInDay ~/ millisecondsInHour);
 
-    return '$earthYears  years, ${earthDays < 10 ? '0$earthDays' : earthDays} days, ${earthHours < 10 ? '0$earthHours' : earthHours} hours';
+    return '$earthYears  year, ${earthDays < 10 ? '0$earthDays' : earthDays} day, ${earthHours < 10 ? '0$earthHours' : earthHours} hour';
   }
-}
 
-enum CardType { first, second, third }
-
-class _CardWidget extends StatelessWidget {
-  const _CardWidget({
-    super.key,
-    required this.cardType,
-    required this.text,
-    required this.imagePath,
-  });
-
-  final CardType cardType;
-  final String text;
-  final String imagePath;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = UIThemes.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.greyPrimary,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          if (cardType == CardType.first && imagePath.isNotEmpty)
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
-              // color: Colors.yellow,
-              // constraints: const BoxConstraints(
-              //   maxHeight: 200,
-              // ),
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.fill,
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              child: Text(
-                text ?? '',
-                style: theme.text24Regular
-                    .copyWith(color: theme.textPrimary, height: 1),
-              ),
-            ),
-          ),
-          if (cardType == CardType.third && imagePath.isNotEmpty)
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
-              ),
-              // color: Colors.yellow,
-              // constraints: const BoxConstraints(
-              //   maxHeight: 200,
-              // ),
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.fill,
-              ),
-            ),
-        ],
-      ),
-    );
+  Future<void> _launchURL() async {
+    final url = Uri.parse('https://github.com/AlefGG/millers_planet');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }
