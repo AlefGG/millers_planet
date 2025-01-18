@@ -4,10 +4,10 @@ import 'package:millers_planet/main/home_page.dart';
 import 'package:millers_planet/resources/ui_themes.dart';
 
 void main() async {
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  await precacheAssets();
-  FlutterNativeSplash.remove();
+  // WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  // FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  // await precacheAssets();
+  // FlutterNativeSplash.remove();
 
   runApp(const MyApp());
 }
